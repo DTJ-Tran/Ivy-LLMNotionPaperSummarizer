@@ -39,7 +39,7 @@ For detail instruction on how to **Duplicate a public page** check [**here**](ht
 ### **🧭 Step 3. Find Your `NOTION_DATABASE_ID`**
 1. Open your duplicated Notion database.  
 2. Copy the full link (it looks like `https://www.notion.so/username/...<database_id>?v=...`) by follow the below interaction 
-![Alt Text](copy_DB.gif)
+![Alt Text](Instruction/copy_DB.gif)
 3. The **long string** before `?v=` is your **Database ID**.  
    Example:  
    ```
@@ -60,7 +60,7 @@ For detail instruction on how to **Duplicate a public page** check [**here**](ht
 
 **You can follow the below instruction for step 4**
 
-![Alt Text](Integration.gif)
+![Alt Text](Instruction/Integration.gif)
 ---
 
 ### **🧬 Step 5. Get Your Fireworks API Key**
@@ -86,7 +86,7 @@ Additional Notice:
 accounts/fireworks/models/[model-name]
 ```
 **You can follow the instruction as the below figure**
-![Alt Text](model-selection.gif)
+![Alt Text](Instruction/model-selection.gif)
 
 ---
 
