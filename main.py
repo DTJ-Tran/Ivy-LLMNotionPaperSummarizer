@@ -57,8 +57,13 @@ def main():
         if not text.strip():
             print("⚠️ No text extracted — skipping...")
             continue
+        
+        # Step: compress text
+        print("🪶 Paraphrasing & shortening extracted text...")
+        compressed_text = compress_text_with_fireworks(text)
 
-        summary_data = summarize_text(text)
+        summary_data = summarize_text(compressed_text)
+
         if not summary_data.get("one_sentence_summary", "").strip():
             print("⚠️ Empty summary — skipping...")
             continue
@@ -82,17 +87,60 @@ def extract_text_from_pdf(filepath: Path) -> str:
                 return data["text"]
             raise ValueError("Empty MarkItDown response")
     except Exception as e:
-        print(f"⚠️ MarkItDown failed ({e}), falling back to PyPDF2")
+        print(f"⚠️ MarkItDown failed ({e}), Unable to extracted-text - tried again")
         try:
             from PyPDF2 import PdfReader
             reader = PdfReader(filepath)
             text = " ".join(page.extract_text() or "" for page in reader.pages)
+            print("🧾 Extracted again sucessfully ✅")
             return text.strip()
         except Exception as e2:
             print(f"❌ PyPDF2 failed: {e2}")
             return ""
 
-# ---------------- SUMMARIZER (Fireworks + Qwen) ----------------
+# ---------------- Text-Compressor (Fireworks + LLM) ----------------
+def compress_text_with_fireworks(text: str, model: str = MODEL_NAME) -> str:
+    """
+    Paraphrase and shorten the extracted text before summarization.
+    Keeps core meaning, removes redundancy, and fits within ~1500 tokens.
+    """
+    if not text.strip():
+        return ""
+
+    prompt = f"""
+    You are an efficient academic text compressor.
+
+    Task:
+    - Paraphrase and shorten the given text while keeping the main ideas, technical terms, and structure.
+    - Remove redundancies, repeated phrasing, and irrelevant sections.
+    - The output should be around 20-30% of the original length (~1500 tokens max).
+    - Preserve meaning — do not summarize or alter conclusions.
+
+    Text to compress:
+    {text[:8000]}
+    """
+
+    try:
+        response = fw.chat.completions.create(
+            model=model,
+            messages=[
+                {"role": "system", "content": "You are a precise text compressor."},
+                {"role": "user", "content": prompt},
+            ],
+            max_tokens=1500,
+            temperature=0.2,
+        )
+
+        message = response.choices[0].message
+        raw_output = (message.content or getattr(message, "reasoning_content", "") or "").strip()
+        print("🪶 Text compressed successfully ✅")
+        return raw_output
+
+    except Exception as e:
+        print(f"⚠️ Text compression failed: {e}")
+        return text  # fallback to original
+    
+# ---------------- SUMMARIZER (Fireworks + LLM) ----------------
 def summarize_text(text: str, style: str = "concise academic") -> dict:
     """Summarize academic text into structured fields."""
     if not text:
@@ -102,22 +150,26 @@ def summarize_text(text: str, style: str = "concise academic") -> dict:
         ]}
 
     prompt = f"""
-You are a precise academic summarizer.
+    You are a precise academic summarizer.
 
-Summarize the following paper in a **{style}** style.
-Return ONLY a valid JSON object with these exact keys:
-- title
-- objective
-- methods
-- results
-- contributions
-- one_sentence_summary
-- authors (comma-separated)
-- tags (list of short keywords or research areas)
+    Your goal:
+    - Produce a **concise summary** in a **{style}** tone.
+    - Ensure the output is strictly valid JSON (no markdown or commentary).
+    - Each key must be short, factual, and written in clear academic English.
 
-Text:
-{text[:4000]}
-"""
+    Return ONLY a JSON object with these exact keys:
+    - title
+    - objective
+    - methods
+    - results
+    - contributions
+    - one_sentence_summary
+    - authors (comma-separated)
+    - tags (list of short keywords or research areas)
+
+    Text to summarize (truncated if long):
+    {text[:4000]}
+    """
 
     try:
         response = fw.chat.completions.create(
@@ -126,13 +178,17 @@ Text:
                 {"role": "system", "content": "You are a helpful research assistant."},
                 {"role": "user", "content": prompt},
             ],
-            max_tokens=600,
+            max_tokens=1000,  # 🧠 hard limit on model output size
             temperature=0.3,
         )
 
-        raw_output = response.choices[0].message.content.strip()
-
-        # Attempt to isolate JSON from mixed output
+        # Safely handle None or reasoning-only responses
+        
+        message = response.choices[0].message
+        raw_output = (message.content or getattr(message, "reasoning_content", "") or "").strip()
+        print("the raw_output : ", raw_output)
+        print("the message content: ", message.content )
+        # Extract JSON portion safely
         json_start = raw_output.find("{")
         json_end = raw_output.rfind("}") + 1
         json_str = raw_output[json_start:json_end]
@@ -180,6 +236,14 @@ def find_notion_page_by_title(title: str):
         print(f"⚠️ Notion query failed: {e}")
         return None
 
+def normalize_text(value):
+    """Ensure the value is a string, flattening lists or dicts."""
+    if isinstance(value, list):
+        return "; ".join(str(v) for v in value)
+    if isinstance(value, dict):
+        return json.dumps(value, ensure_ascii=False)
+    return str(value)
+
 def find_notion_page_by_file_name(file_name: str):
     """Search Notion database for an existing page by File-Name (used as primary key)."""
     url = f"https://api.notion.com/v1/databases/{NOTION_DATABASE_ID}/query"
@@ -212,16 +276,16 @@ def update_notion_summary(page_id: str, summary_data: dict, file_name: str = "")
 
     payload = {
         "properties": {
-            "Objective": {"rich_text": [{"text": {"content": summary_data.get("objective", "")}}]},
-            "Methods": {"rich_text": [{"text": {"content": summary_data.get("methods", "")}}]},
-            "Results": {"rich_text": [{"text": {"content": summary_data.get("results", "")}}]},
-            "Contributions": {"rich_text": [{"text": {"content": summary_data.get("contributions", "")}}]},
-            "Summary": {"rich_text": [{"text": {"content": summary_data.get("one_sentence_summary", "")}}]},
-            "Author": {"rich_text": [{"text": {"content": summary_data.get("authors", "")}}]},
-            "Tag": {"multi_select": [{"name": t} for t in summary_data.get("tags", [])]},
+            "Objective": {"rich_text": [{"text": {"content": normalize_text(summary_data.get("objective", ""))}}]},
+            "Methods": {"rich_text": [{"text": {"content": normalize_text(summary_data.get("methods", ""))}}]},
+            "Results": {"rich_text": [{"text": {"content": normalize_text(summary_data.get("results", ""))}}]},
+            "Contributions": {"rich_text": [{"text": {"content": normalize_text(summary_data.get("contributions", ""))}}]},
+            "Summary": {"rich_text": [{"text": {"content": normalize_text(summary_data.get("one_sentence_summary", ""))}}]},
+            "Author": {"rich_text": [{"text": {"content": normalize_text(summary_data.get("authors", ""))}}]},
+            "Tag": {"multi_select": [{"name": normalize_text(t)} for t in summary_data.get("tags", [])]},
             "Status": {"select": {"name": "Updated"}},
             # 👇 record the local filename as reference (no upload)
-            "File-Name": {"rich_text": [{"text": {"content": file_name or summary_data.get('title', '')}}]},
+            "File-Name": {"rich_text": [{"text": {"content": normalize_text(file_name or summary_data.get('title', ''))}}]},
         }
     }
 
@@ -243,18 +307,18 @@ def push_to_notion(name: str, summary_data: dict):
     payload = {
         "parent": {"database_id": NOTION_DATABASE_ID},
         "properties": {
-            "Title": {"title": [{"text": {"content": summary_data.get('title') or name}}]},
-            "Objective": {"rich_text": [{"text": {"content": summary_data.get('objective', '')}}]},
-            "Methods": {"rich_text": [{"text": {"content": summary_data.get('methods', '')}}]},
-            "Results": {"rich_text": [{"text": {"content": summary_data.get('results', '')}}]},
-            "Contributions": {"rich_text": [{"text": {"content": summary_data.get('contributions', '')}}]},
-            "Summary": {"rich_text": [{"text": {"content": summary_data.get('one_sentence_summary', '')}}]},
-            "Author": {"rich_text": [{"text": {"content": summary_data.get('authors', '')}}]},
-            "Tag": {"multi_select": [{"name": t} for t in summary_data.get('tags', [])]},
+            "Title": {"title": [{"text": {"content": normalize_text(summary_data.get('title') or name)}}]},
+            "Objective": {"rich_text": [{"text": {"content": normalize_text(summary_data.get('objective', ''))}}]},
+            "Methods": {"rich_text": [{"text": {"content": normalize_text(summary_data.get('methods', ''))}}]},
+            "Results": {"rich_text": [{"text": {"content": normalize_text(summary_data.get('results', ''))}}]},
+            "Contributions": {"rich_text": [{"text": {"content": normalize_text(summary_data.get('contributions', ''))}}]},
+            "Summary": {"rich_text": [{"text": {"content": normalize_text(summary_data.get('one_sentence_summary', ''))}}]},
+            "Author": {"rich_text": [{"text": {"content": normalize_text(summary_data.get('authors', ''))}}]},
+            "Tag": {"multi_select": [{"name": normalize_text(t)} for t in summary_data.get("tags", [])]},
             "Status": {"select": {"name": "To Read"}},
             "Date-Added": {"date": {"start": datetime.now().astimezone().isoformat()}},
             # 👇 Record local file name as a reference
-            "File-Name": {"rich_text": [{"text": {"content": name}}]},
+            "File-Name": {"rich_text": [{"text": {"content": normalize_text(name)}}]},
         },
     }
 
@@ -263,7 +327,6 @@ def push_to_notion(name: str, summary_data: dict):
         print(f"❌ Notion API Error ({res.status_code}): {res.text}")
     else:
         print(f"✅ Added new page: {summary_data.get('title', name)} ({name})")
-
 # ---------------- ENTRY ----------------
 if __name__ == "__main__":
     console = Console()

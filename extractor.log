@@ -1,16 +1,9 @@
-[2025-10-13 19:19:09 +0700] [7360] [INFO] Starting gunicorn 23.0.0
-[2025-10-13 19:19:09 +0700] [7360] [INFO] Listening at: http://0.0.0.0:6000 (7360)
-[2025-10-13 19:19:09 +0700] [7360] [INFO] Using worker: sync
-[2025-10-13 19:19:09 +0700] [7361] [INFO] Booting worker with pid: 7361
-[2025-10-13 19:19:09 +0700] [7362] [INFO] Booting worker with pid: 7362
-[2025-10-13 19:19:13 +0700] [7360] [INFO] Handling signal: winch
-[2025-10-13 19:19:13 +0700] [7360] [INFO] Handling signal: winch
-[2025-10-13 19:19:13 +0700] [7360] [INFO] Handling signal: winch
-[2025-10-13 19:19:13 +0700] [7360] [INFO] Handling signal: winch
-[2025-10-13 19:19:13 +0700] [7360] [INFO] Handling signal: winch
-[2025-10-13 19:19:13 +0700] [7360] [INFO] Handling signal: winch
-[2025-10-13 19:19:13 +0700] [7360] [INFO] Handling signal: winch
-[2025-10-13 19:19:15 +0700] [7360] [INFO] Handling signal: term
-[2025-10-13 19:19:15 +0700] [7361] [INFO] Worker exiting (pid: 7361)
-[2025-10-13 19:19:15 +0700] [7362] [INFO] Worker exiting (pid: 7362)
-[2025-10-13 19:19:15 +0700] [7360] [INFO] Shutting down: Master
+[2025-10-14 19:45:40 +0700] [26091] [INFO] Starting gunicorn 23.0.0
+[2025-10-14 19:45:40 +0700] [26091] [INFO] Listening at: http://0.0.0.0:6000 (26091)
+[2025-10-14 19:45:40 +0700] [26091] [INFO] Using worker: sync
+[2025-10-14 19:45:40 +0700] [26093] [INFO] Booting worker with pid: 26093
+[2025-10-14 19:45:40 +0700] [26094] [INFO] Booting worker with pid: 26094
+[2025-10-14 19:45:49 +0700] [26091] [INFO] Handling signal: term
+[2025-10-14 19:45:49 +0700] [26094] [INFO] Worker exiting (pid: 26094)
+[2025-10-14 19:45:49 +0700] [26093] [INFO] Worker exiting (pid: 26093)
+[2025-10-14 19:45:49 +0700] [26091] [INFO] Shutting down: Master
