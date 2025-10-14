@@ -19,7 +19,7 @@ Python-Interpreter (>= Python 3.9 is ok)
 ## 🪴 Step-by-Step Setup
 
 ### **🩵 Step 1. Download & Unzip**
-Download the `Ivy` package you received (using the github cloning command)
+Download the `Ivy` package you received or (using the github cloning command)
 ```
    git clone [Ivy-github-link]
 ```
