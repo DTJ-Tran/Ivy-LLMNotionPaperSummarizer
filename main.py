@@ -186,8 +186,6 @@ def summarize_text(text: str, style: str = "concise academic") -> dict:
         
         message = response.choices[0].message
         raw_output = (message.content or getattr(message, "reasoning_content", "") or "").strip()
-        print("the raw_output : ", raw_output)
-        print("the message content: ", message.content )
         # Extract JSON portion safely
         json_start = raw_output.find("{")
         json_end = raw_output.rfind("}") + 1
