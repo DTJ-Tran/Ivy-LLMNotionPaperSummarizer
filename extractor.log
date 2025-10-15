@@ -1,9 +1,12 @@
-[2025-10-14 19:45:40 +0700] [26091] [INFO] Starting gunicorn 23.0.0
-[2025-10-14 19:45:40 +0700] [26091] [INFO] Listening at: http://0.0.0.0:6000 (26091)
-[2025-10-14 19:45:40 +0700] [26091] [INFO] Using worker: sync
-[2025-10-14 19:45:40 +0700] [26093] [INFO] Booting worker with pid: 26093
-[2025-10-14 19:45:40 +0700] [26094] [INFO] Booting worker with pid: 26094
-[2025-10-14 19:45:49 +0700] [26091] [INFO] Handling signal: term
-[2025-10-14 19:45:49 +0700] [26094] [INFO] Worker exiting (pid: 26094)
-[2025-10-14 19:45:49 +0700] [26093] [INFO] Worker exiting (pid: 26093)
-[2025-10-14 19:45:49 +0700] [26091] [INFO] Shutting down: Master
+[2025-10-15 23:08:15 +0700] [59937] [INFO] Starting gunicorn 23.0.0
+[2025-10-15 23:08:15 +0700] [59937] [ERROR] Connection in use: ('127.0.0.1', 6000)
+[2025-10-15 23:08:15 +0700] [59937] [ERROR] connection to ('127.0.0.1', 6000) failed: [Errno 48] Address already in use
+[2025-10-15 23:08:16 +0700] [59937] [ERROR] Connection in use: ('127.0.0.1', 6000)
+[2025-10-15 23:08:16 +0700] [59937] [ERROR] connection to ('127.0.0.1', 6000) failed: [Errno 48] Address already in use
+[2025-10-15 23:08:17 +0700] [59937] [ERROR] Connection in use: ('127.0.0.1', 6000)
+[2025-10-15 23:08:17 +0700] [59937] [ERROR] connection to ('127.0.0.1', 6000) failed: [Errno 48] Address already in use
+[2025-10-15 23:08:18 +0700] [59937] [ERROR] Connection in use: ('127.0.0.1', 6000)
+[2025-10-15 23:08:18 +0700] [59937] [ERROR] connection to ('127.0.0.1', 6000) failed: [Errno 48] Address already in use
+[2025-10-15 23:08:19 +0700] [59937] [ERROR] Connection in use: ('127.0.0.1', 6000)
+[2025-10-15 23:08:19 +0700] [59937] [ERROR] connection to ('127.0.0.1', 6000) failed: [Errno 48] Address already in use
+[2025-10-15 23:08:20 +0700] [59937] [ERROR] Can't connect to ('127.0.0.1', 6000)
