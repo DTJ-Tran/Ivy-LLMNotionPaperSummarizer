@@ -26,6 +26,7 @@ git clone https://github.com/DTJ-Tran/Ivy-LLMNotionPaperSummarizer.git
 
 ## 📘 Step 2. Duplicate the Notion Template
 
+
 Open this link:  
 👉 [**Reading Paper Summarizing Tool Template**](https://dattrantienhust.notion.site/reading-paper-summarizing-tool)
 
